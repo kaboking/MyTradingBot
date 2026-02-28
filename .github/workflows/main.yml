@@ -25,7 +25,7 @@ jobs:
           {
               "max_open_trades": 3,
               "stake_currency": "USDT",
-              "stake_amount": "0.05",
+              "stake_amount": "unlimited",
               "dry_run": true,
               "dry_run_wallet": 1000,
               "timeframe": "5m",
@@ -33,6 +33,9 @@ jobs:
                   "name": "gateio",
                   "pair_whitelist": ["BTC/USDT", "ETH/USDT"]
               },
+              "pairlists": [
+                  {"method": "StaticPairList"}
+              ],
               "entry_pricing": {
                   "price_side": "same",
                   "use_order_book": true,
