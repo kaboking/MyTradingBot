@@ -1,7 +1,7 @@
 name: Freqtrade Dry-Run Test
 
 on:
-  workflow_dispatch:          # شغله يدوي من Actions tab
+  workflow_dispatch:
 
 jobs:
   test-bot:
@@ -15,18 +15,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
+          # بدون cache عشان نعدي الخطأ ده بسرعة
+          # cache: 'pip'  ← مش موجود
 
-      - name: Install Freqtrade (بدون TA-Lib إجباري في البداية)
+      - name: Install Freqtrade
         run: |
           pip install --upgrade pip
-          pip install freqtrade[all] --no-cache-dir
+          pip install freqtrade[all] --no-cache-dir   # --no-cache-dir عشان نتجنب مشاكل مؤقتة
 
       - name: Create user_data structure
         run: |
           mkdir -p user_data/strategies
 
-          # إنشاء config بسيط وكامل
           cat > user_data/config.json << 'EOF'
           {
               "max_open_trades": 3,
@@ -48,7 +48,6 @@ jobs:
           }
           EOF
 
-          # إنشاء استراتيجية بسيطة جدًا (تفتح صفقات دايماً عشان نختبر)
           cat > user_data/strategies/TestAlwaysBuy.py << 'EOF'
           from freqtrade.strategy import IStrategy
           from pandas import DataFrame
@@ -67,7 +66,7 @@ jobs:
                   return dataframe
 
               def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-                  dataframe['exit_long'] = 0  # خروج فقط بالـ ROI أو stoploss
+                  dataframe['exit_long'] = 0
                   return dataframe
           EOF
 
