@@ -1,4 +1,4 @@
-name: Freqtrade-Chrome-Link
+name: Freqtrade-Final-Fix
 on:
   workflow_dispatch:
 jobs:
@@ -10,17 +10,15 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install All Dependencies
+      - name: Install Dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential wget
           wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
           tar -xzf ta-lib-0.4.0-src.tar.gz
           cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
           cd ..
-          pip install TA-Lib freqtrade pyngrok  # ضفنا أداة الرابط
-
-      - name: Setup Folders and Config
+          pip install TA-Lib freqtrade
+      - name: Create Config & Run
         run: |
           freqtrade create-userdir --userdir user_data
           cat <<EOF > user_data/config.json
@@ -30,15 +28,13 @@ jobs:
               "stake_amount": "unlimited",
               "dry_run": true,
               "dry_run_wallet": 1000,
-              "exchange": {"name": "gateio", "pair_whitelist": ["BTC/USDT", "ETH/USDT"]},
-              "api_server": {
-                  "enabled": true,
-                  "listen_ip_address": "0.0.0.0",
-                  "listen_port": 8080,
-                  "username": "admin",
-                  "password": "password123"
+              "exchange": {
+                  "name": "gateio",
+                  "pair_whitelist": ["BTC/USDT", "ETH/USDT"]
               },
               "pairlists": [{"method": "StaticPairList"}],
+              "entry_pricing": {"price_side": "same", "use_order_book": true},
+              "exit_pricing": {"price_side": "same", "use_order_book": true},
               "telegram": {
                   "enabled": true,
                   "token": "8575558875:AAEK-jcmG5NF1NJGKdq3XHZ4XPcZxjvbtNo",
@@ -46,13 +42,5 @@ jobs:
               }
           }
           EOF
-
-      - name: Start Bot and Get Chrome Link
-        run: |
-          # تشغيل البوت في الخلفية عشان نعرف نطلع الرابط
-          nohup freqtrade trade --config user_data/config.json --strategy SampleStrategy --userdir user_data --dry-run & 
-          sleep 10
-          # إنشاء رابط لكروم (هتلاقيه مكتوب في الـ Logs)
-          python -c "from pyngrok import ngrok; print('\n\nرابط كروم هو: ' + ngrok.connect(8080).public_url + '\n\n')"
-          # إبقاء السيرفر شغال
-          sleep 3600
+          # التشغيل المباشر
+          freqtrade trade --config user_data/config.json --strategy SampleStrategy --userdir user_data --dry-run
