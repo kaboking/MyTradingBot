@@ -1,4 +1,4 @@
-name: Freqtrade Dry-Run Test
+name: Freqtrade-Dry-Run-Success
 
 on:
   workflow_dispatch:
@@ -14,22 +14,27 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # cache: 'pip'   ← مش موجود عشان نعدي الخطأ
 
-      - name: Install Freqtrade
+      - name: Install TA-Lib & Freqtrade (The Real Fix)
         run: |
+          sudo apt-get update && sudo apt-get install -y build-essential wget
+          wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+          tar -xzf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
+          cd ..
           pip install --upgrade pip
-          pip install freqtrade
+          pip install TA-Lib freqtrade
 
-      - name: Prepare user_data and config + strategy
+      - name: Prepare user_data and config
         run: |
-          mkdir -p user_data/strategies
+          # استخدام الأمر الرسمي لإنشاء المجلدات لضمان عدم وجود أخطاء مسار
+          freqtrade create-userdir --userdir user_data
 
-          cat > user_data/config.json << 'EOF'
+          cat <<EOF > user_data/config.json
           {
               "max_open_trades": 3,
               "stake_currency": "USDT",
-              "stake_amount": "unlimited",
+              "stake_amount": "0.05",
               "dry_run": true,
               "dry_run_wallet": 1000,
               "timeframe": "5m",
@@ -45,21 +50,18 @@ jobs:
           }
           EOF
 
-          cat > user_data/strategies/AlwaysBuy.py << 'EOF'
+          # كتابة الاستراتيجية داخل المجلد الصحيح
+          cat <<EOF > user_data/strategies/AlwaysBuy.py
           from freqtrade.strategy import IStrategy
           class AlwaysBuy(IStrategy):
               INTERFACE_VERSION = 3
               minimal_roi = {"0": 0.05}
               stoploss = -0.10
               timeframe = '5m'
-
-              def populate_indicators(self, dataframe, metadata):
-                  return dataframe
-
+              def populate_indicators(self, dataframe, metadata): return dataframe
               def populate_entry_trend(self, dataframe, metadata):
                   dataframe['enter_long'] = 1
                   return dataframe
-
               def populate_exit_trend(self, dataframe, metadata):
                   dataframe['exit_long'] = 0
                   return dataframe
