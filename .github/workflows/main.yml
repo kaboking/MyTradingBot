@@ -22,12 +22,12 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install TA-Lib freqtrade
-      - name: Execute Strategy
+      - name: The Grand Fix
         run: |
-          # 1. أمر رسمي لإنشاء كل المجلدات المطلوبة أوتوماتيكياً
+          # 1. إنشاء هيكل المجلدات الرسمي للبوت
           freqtrade create-userdir --userdir user_data
           
-          # 2. وضع الإعدادات والتوكن بتاعك في المكان اللي البوت بيحبه
+          # 2. وضع ملف الإعدادات داخل مجلد الـ user_data مباشرة
           cat <<EOF > user_data/config.json
           {
               "max_open_trades": 3,
@@ -53,5 +53,5 @@ jobs:
           }
           EOF
           
-          # 3. التشغيل النهائي مع الإشارة للمجلد الجديد
+          # 3. التشغيل باستخدام المسار الكامل للمجلد والملف
           freqtrade trade --userdir user_data --config user_data/config.json --strategy SampleStrategy --dry-run
