@@ -16,5 +16,6 @@ jobs:
       - name: Start Bot Live
         run: |
           # الأمر ده هيخلي البوت يفضل شغال ومراقب العملات
-          freqtrade trade --config config.json --strategy SampleStrategy --dry-run
+                    freqtrade trade --config config.json --strategy SampleStrategy --dry-run
+
 
