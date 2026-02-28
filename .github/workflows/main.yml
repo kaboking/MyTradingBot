@@ -4,12 +4,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Freqtrade
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install and Run
         run: |
           git clone https://github.com/freqtrade/freqtrade.git
           cd freqtrade
-          ./setup.sh --install
-          source .env/bin/activate
-          # هنا هنحط أمر تشغيل القناص بـ 100 دولار
-          freqtrade trade --strategy Sniper --config user_data/config.json
+          pip install -e .
+          # أمر تشغيل تجريبي عشان نتأكد إن السيرفر تمام
+          freqtrade new-config --config config.json --non-interactive
+          freqtrade trade --config config.json --strategy SampleStrategy --dry-run
+
