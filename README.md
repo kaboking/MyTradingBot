@@ -1,13 +1,13 @@
-name: Run-Bot-VPS
+name: Abu-Batta-Bot
 on: [workflow_dispatch]
 jobs:
-  build:
+  trade:
     runs-on: ubuntu-latest
     steps:
-      - name: Start VPS Server
+      - name: Start Server
         run: |
-          echo "جاري تشغيل السيرفر يا أبو بطة..."
-          python3 --version
+          echo "يا محمد السيرفر بدأ يشتغل حالاً.."
+          python3 -m pip install --upgrade pip
           pip install freqtrade
-          freqtrade --version
-          echo "السيرفر جاهز والحمد لله!"
+          echo "مبروك يا أبو بطة.. السيرفر جاهز للصيد!"
+
