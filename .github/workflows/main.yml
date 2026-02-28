@@ -22,4 +22,7 @@ jobs:
           pip install TA-Lib freqtrade
       - name: Run Bot
         run: |
-          freqtrade trade --config config.json --strategy SampleStrategy --dry-run
+          # سطر سحري عشان نعرف مكان الملف بالظبط
+          find . -name "config.json"
+          # تشغيل البوت مع البحث عن الملف
+          freqtrade trade --config $(find . -name "config.json" | head -n 1) --strategy SampleStrategy --dry-run
