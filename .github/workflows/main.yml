@@ -1,35 +1,26 @@
-name: Freqtrade-Dry-Run-Success
-
+name: Freqtrade-GateIO-Success
 on:
   workflow_dispatch:
-
 jobs:
   test-bot:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install TA-Lib & Freqtrade (The Real Fix)
+      - name: Install TA-Lib & Freqtrade
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential wget
           wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
           tar -xzf ta-lib-0.4.0-src.tar.gz
           cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
           cd ..
-          pip install --upgrade pip
           pip install TA-Lib freqtrade
-
-      - name: Prepare user_data and config
+      - name: Build and Launch on GateIO
         run: |
-          # استخدام الأمر الرسمي لإنشاء المجلدات لضمان عدم وجود أخطاء مسار
           freqtrade create-userdir --userdir user_data
-
           cat <<EOF > user_data/config.json
           {
               "max_open_trades": 3,
@@ -39,7 +30,7 @@ jobs:
               "dry_run_wallet": 1000,
               "timeframe": "5m",
               "exchange": {
-                  "name": "binance",
+                  "name": "gateio",
                   "pair_whitelist": ["BTC/USDT", "ETH/USDT"]
               },
               "telegram": {
@@ -49,8 +40,6 @@ jobs:
               }
           }
           EOF
-
-          # كتابة الاستراتيجية داخل المجلد الصحيح
           cat <<EOF > user_data/strategies/AlwaysBuy.py
           from freqtrade.strategy import IStrategy
           class AlwaysBuy(IStrategy):
@@ -66,6 +55,4 @@ jobs:
                   dataframe['exit_long'] = 0
                   return dataframe
           EOF
-
-      - name: Run Freqtrade
-        run: freqtrade trade --config user_data/config.json --strategy AlwaysBuy --userdir user_data --dry-run
+          freqtrade trade --config user_data/config.json --strategy AlwaysBuy --userdir user_data --dry-run
