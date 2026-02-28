@@ -10,21 +10,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install System Dependencies
+      - name: Install TA-Lib & Freqtrade
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential wget
           wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
           tar -xzf ta-lib-0.4.0-src.tar.gz
-          cd ta-lib/
-          ./configure --prefix=/usr
-          make
-          sudo make install
-      - name: Install Freqtrade and TA-Lib wrapper
-        run: |
+          cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
+          cd ..
           pip install --upgrade pip
-          pip install TA-Lib
-          pip install freqtrade
+          pip install TA-Lib freqtrade
       - name: Run Bot
         run: |
-          freqtrade trade --config ./config.json --strategy SampleStrategy --dry-run
+          freqtrade trade --config config.json --strategy SampleStrategy --dry-run
