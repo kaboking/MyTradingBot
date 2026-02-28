@@ -10,7 +10,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install TA-Lib & Freqtrade
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential wget
@@ -18,11 +18,18 @@ jobs:
           tar -xzf ta-lib-0.4.0-src.tar.gz
           cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
           cd ..
+      - name: Install Freqtrade
+        run: |
           pip install --upgrade pip
           pip install TA-Lib freqtrade
       - name: Run Bot
         run: |
-          # سطر سحري عشان نعرف مكان الملف بالظبط
-          find . -name "config.json"
-          # تشغيل البوت مع البحث عن الملف
-          freqtrade trade --config $(find . -name "config.json" | head -n 1) --strategy SampleStrategy --dry-run
+          # سطر سحري عشان نعرف الملفات فين بالظبط
+          ls -R
+          # تشغيل البوت مع البحث التلقائي عن مكان الـ config
+          CONFIG_PATH=$(find . -name "config.json" | head -n 1)
+          if [ -z "$CONFIG_PATH" ]; then
+            echo "الملف مش موجود خالص في المستودع يا محمد!"
+            exit 1
+          fi
+          freqtrade trade --config "$CONFIG_PATH" --strategy SampleStrategy --dry-run
