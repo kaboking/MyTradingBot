@@ -1,0 +1,9 @@
+name: AbuBatta-Final
+on:
+  workflow_dispatch:
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run
+        run: echo "Starting Bot..."
