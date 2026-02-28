@@ -25,7 +25,3 @@ jobs:
       - name: Run Bot
         run: |
           freqtrade trade --config config.json --strategy SampleStrategy --dry-run
-
-
-
-
