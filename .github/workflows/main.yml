@@ -1,0 +1,15 @@
+name: Run-Bot-VPS
+on: [workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Freqtrade
+        run: |
+          git clone https://github.com/freqtrade/freqtrade.git
+          cd freqtrade
+          ./setup.sh --install
+          source .env/bin/activate
+          # هنا هنحط أمر تشغيل القناص بـ 100 دولار
+          freqtrade trade --strategy Sniper --config user_data/config.json
