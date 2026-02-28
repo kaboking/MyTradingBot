@@ -22,12 +22,12 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install TA-Lib freqtrade
-      - name: Root Solution (The Fix)
+      - name: Force Create Structure and Run
         run: |
-          # 1. إنشاء كل المجلدات اللي البوت بيحلم بيها
-          freqtrade create-userdir --userdir user_data
+          # 1. إنشاء المجلدات الإجبارية
+          mkdir -p user_data/strategies
           
-          # 2. إنشاء ملف الإعدادات ببياناتك داخل المجلد الصحيح
+          # 2. إنشاء ملف الإعدادات ببياناتك داخل المجلد
           cat <<EOF > user_data/config.json
           {
               "max_open_trades": 3,
@@ -53,5 +53,5 @@ jobs:
           }
           EOF
           
-          # 3. تشغيل البوت باستخدام الاستراتيجية الافتراضية المدمجة لضمان العمل
+          # 3. تشغيل البوت مع إجباره على استخدام المجلد اللي لسه عاملينه
           freqtrade trade --userdir user_data --config user_data/config.json --strategy SampleStrategy --dry-run
