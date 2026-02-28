@@ -8,21 +8,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # بدون cache عشان نعدي الخطأ ده نهائيًا
+          # cache: 'pip'   ← مش موجود عشان نعدي الخطأ
 
       - name: Install Freqtrade
         run: |
           pip install --upgrade pip
-          pip install freqtrade[all]
+          pip install freqtrade
 
-      - name: Create user_data structure
+      - name: Prepare user_data and config + strategy
         run: |
           mkdir -p user_data/strategies
 
@@ -31,13 +30,12 @@ jobs:
               "max_open_trades": 3,
               "stake_currency": "USDT",
               "stake_amount": "unlimited",
-              "tradable_balance_ratio": 0.99,
               "dry_run": true,
               "dry_run_wallet": 1000,
               "timeframe": "5m",
               "exchange": {
                   "name": "binance",
-                  "pair_whitelist": ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
+                  "pair_whitelist": ["BTC/USDT", "ETH/USDT"]
               },
               "telegram": {
                   "enabled": true,
@@ -47,33 +45,25 @@ jobs:
           }
           EOF
 
-          cat > user_data/strategies/TestAlwaysBuy.py << 'EOF'
+          cat > user_data/strategies/AlwaysBuy.py << 'EOF'
           from freqtrade.strategy import IStrategy
-          from pandas import DataFrame
-
-          class TestAlwaysBuy(IStrategy):
+          class AlwaysBuy(IStrategy):
               INTERFACE_VERSION = 3
               minimal_roi = {"0": 0.05}
               stoploss = -0.10
               timeframe = '5m'
 
-              def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+              def populate_indicators(self, dataframe, metadata):
                   return dataframe
 
-              def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+              def populate_entry_trend(self, dataframe, metadata):
                   dataframe['enter_long'] = 1
                   return dataframe
 
-              def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+              def populate_exit_trend(self, dataframe, metadata):
                   dataframe['exit_long'] = 0
                   return dataframe
           EOF
 
-      - name: Run Freqtrade dry-run
-        run: |
-          freqtrade trade \
-            --config user_data/config.json \
-            --strategy TestAlwaysBuy \
-            --userdir user_data \
-            --dry-run \
-            --logfile user_data/freqtrade.log || true   # || true عشان لو وقف بعد شوية ما يفشلش الjob
+      - name: Run Freqtrade
+        run: freqtrade trade --config user_data/config.json --strategy AlwaysBuy --userdir user_data --dry-run
