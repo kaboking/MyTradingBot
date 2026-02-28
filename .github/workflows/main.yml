@@ -1,12 +1,12 @@
-name: Freqtrade-Final-Fix
+name: Freqtrade-Full-Control
 on:
   workflow_dispatch:
 jobs:
-  run-bot:
+  test-bot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -18,7 +18,7 @@ jobs:
           cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
           cd ..
           pip install TA-Lib freqtrade
-      - name: Create Config & Run
+      - name: Launch With Force Support
         run: |
           freqtrade create-userdir --userdir user_data
           cat <<EOF > user_data/config.json
@@ -30,17 +30,17 @@ jobs:
               "dry_run_wallet": 1000,
               "exchange": {
                   "name": "gateio",
-                  "pair_whitelist": ["BTC/USDT", "ETH/USDT"]
+                  "pair_whitelist": ["BTC/USDT", "ETH/USDT", "SOL/USDT", "DOGE/USDT"]
               },
               "pairlists": [{"method": "StaticPairList"}],
-              "entry_pricing": {"price_side": "same", "use_order_book": true},
-              "exit_pricing": {"price_side": "same", "use_order_book": true},
               "telegram": {
                   "enabled": true,
                   "token": "8575558875:AAEK-jcmG5NF1NJGKdq3XHZ4XPcZxjvbtNo",
-                  "chat_id": "978554149"
+                  "chat_id": "978554149",
+                  "allow_sending_traceback": false,
+                  "force_entry_enable": true
               }
           }
           EOF
-          # التشغيل المباشر
+          # تشغيل البوت
           freqtrade trade --config user_data/config.json --strategy SampleStrategy --userdir user_data --dry-run
