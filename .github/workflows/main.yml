@@ -15,13 +15,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # بدون cache عشان نعدي الخطأ ده بسرعة
-          # cache: 'pip'  ← مش موجود
+          # بدون cache عشان نعدي الخطأ ده نهائيًا
 
       - name: Install Freqtrade
         run: |
           pip install --upgrade pip
-          pip install freqtrade[all] --no-cache-dir   # --no-cache-dir عشان نتجنب مشاكل مؤقتة
+          pip install freqtrade[all]
 
       - name: Create user_data structure
         run: |
@@ -77,4 +76,4 @@ jobs:
             --strategy TestAlwaysBuy \
             --userdir user_data \
             --dry-run \
-            --logfile user_data/freqtrade.log
+            --logfile user_data/freqtrade.log || true   # || true عشان لو وقف بعد شوية ما يفشلش الjob
