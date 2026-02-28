@@ -13,6 +13,7 @@ jobs:
       - name: Install Freqtrade
         run: |
           pip install freqtrade
-      - name: Start Bot
+      - name: Run Bot Live
         run: |
           freqtrade trade --config config.json --strategy SampleStrategy --dry-run
+
