@@ -27,5 +27,5 @@ jobs:
           pip install freqtrade
       - name: Run Bot
         run: |
+          ls -R
           freqtrade trade --config config.json --strategy SampleStrategy --dry-run
-
