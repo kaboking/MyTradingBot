@@ -1,9 +1,7 @@
 name: 🚀 Hammo-Power-Engine-V1
 
 on:
-  workflow_dispatch: # تشغيل يدوي من عندك
-  schedule:
-    - cron: '*/3 * * * *' # هيفحص كل 3 دقايق
+  workflow_dispatch: 
 
 jobs:
   run_everything:
@@ -17,17 +15,11 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: 🔍 Checking Files Location
+        run: ls -R # الخطوة دي هتقول لحمو الملفات فين بالظبط
+
       - name: 📦 Installing Connection Tools
         run: pip install ccxt python-telegram-bot
 
-      - name: 📡 Linking Telegram & Exchange
-        env:
-          # دي المفاتيح اللي هتحطها في الـ Secrets في GitHub
-          API_KEY: ${{ secrets.BINANCE_API_KEY }}
-          SECRET_KEY: ${{ secrets.BINANCE_SECRET_KEY }}
-          TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TG_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          echo "🎯 حمو: الموتور الرئيسي شغال دلوقتي والربط مع التليجرام جاهز!"
-          # الموتور هيدور على ملف الاستراتيجية اللي بره (trade.py) ويشغله
-          python trade.py
+      - name: 📡 Linking & Running
+        run: python trade.py
