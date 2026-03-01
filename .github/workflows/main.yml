@@ -1,0 +1,58 @@
+name: ⚡ Scalping - 5m Strategy
+on:
+  workflow_dispatch:
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install TA-Lib
+        run: |
+          sudo apt-get update && sudo apt-get install -y build-essential wget
+          wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+          tar -xzf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
+          cd ..
+          pip install TA-Lib freqtrade
+      - name: Launch Scalping
+        run: |
+          freqtrade create-userdir --userdir user_data
+          cat <<EOF > user_data/strategies/ScalpingKing.py
+          from freqtrade.strategy import IStrategy
+          import talib.abstract as ta
+          from pandas import DataFrame
+          class ScalpingKing(IStrategy):
+              timeframe = '5m'
+              stoploss = -0.02
+              minimal_roi = {"0": 0.015}
+              def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+                  dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+                  bollinger = ta.BBANDS(dataframe, timeperiod=20)
+                  dataframe['lower'] = bollinger['lowerband']
+                  return dataframe
+              def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+                  dataframe.loc[((dataframe['rsi'] < 30) & (dataframe['close'] < dataframe['lower'])), 'enter_long'] = 1
+                  return dataframe
+              def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+                  dataframe.loc[(dataframe['rsi'] > 70), 'exit_long'] = 1
+                  return dataframe
+          EOF
+          cat <<EOF > user_data/config.json
+          {
+              "max_open_trades": 10,
+              "stake_currency": "USDT",
+              "stake_amount": 10,
+              "dry_run": true,
+              "exchange": {"name": "gateio", "pair_whitelist": [".*/USDT"]},
+              "api_server": {"enabled": false},
+              "entry_pricing": {"price_side": "same"},
+              "exit_pricing": {"price_side": "same"},
+              "order_types": {"entry": "limit", "exit": "limit", "stoploss": "market", "stoploss_on_exchange": false},
+              "telegram": {
+                  "enabled": true,
+                  "token": "8678435064:AAGLXfPRTuk64LPzSBWFMBDXBnuNyDi-_gQ",
+                  "chat_id": "978554149"
+              }
+          }
+          EOF
+          freqtrade trade --config user_data/config.json --strategy ScalpingKing --userdir user_data --dry-run
