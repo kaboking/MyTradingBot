@@ -1,4 +1,4 @@
-name: Freqtrade-MACD-10Dollar
+name: Strategy-2-Scalping-King
 on:
   workflow_dispatch:
 jobs:
@@ -10,7 +10,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install Dependencies
+      - name: Install TA-Lib
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential wget
           wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
@@ -18,56 +18,44 @@ jobs:
           cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
           cd ..
           pip install TA-Lib freqtrade
-      - name: Create Strategy & Config
+      - name: Launch Scalping Strategy
         run: |
           freqtrade create-userdir --userdir user_data
-          # استراتيجية الماكد 6-16-9
-          cat <<EOF > user_data/strategies/MacdStrategy.py
+          # إنشاء استراتيجية ملك السكالبينج
+          cat <<EOF > user_data/strategies/ScalpingKing.py
           from freqtrade.strategy import IStrategy
           import talib.abstract as ta
           from pandas import DataFrame
 
-          class MacdStrategy(IStrategy):
-              timeframe = '15m'
-              stoploss = -0.10
-              minimal_roi = {"0": 0.05}
+          class ScalpingKing(IStrategy):
+              timeframe = '5m' # فريم أسرع للسكالبينج
+              stoploss = -0.02 # وقف خسارة قريب جداً 2%
+              minimal_roi = {"0": 0.015} # ربح 1.5% واخرج فوراً
 
               def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-                  macd = ta.MACD(dataframe, fastperiod=6, slowperiod=16, signalperiod=9)
-                  dataframe['macd'] = macd['macd']
-                  dataframe['macdsignal'] = macd['macdsignal']
+                  dataframe['rsi'] = ta.RSI(dataframe, timeperiod=14)
+                  bollinger = ta.BBANDS(dataframe, timeperiod=20)
+                  dataframe['lower'] = bollinger['lowerband']
                   return dataframe
 
               def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-                  dataframe.loc[(dataframe['macd'] > dataframe['macdsignal']), 'enter_long'] = 1
+                  dataframe.loc[((dataframe['rsi'] < 30) & (dataframe['close'] < dataframe['lower'])), 'enter_long'] = 1
                   return dataframe
 
               def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-                  dataframe.loc[(dataframe['macd'] < dataframe['macdsignal']), 'exit_long'] = 1
+                  dataframe.loc[(dataframe['rsi'] > 70), 'exit_long'] = 1
                   return dataframe
           EOF
-          # الإعدادات مع تحديد 10 دولار للصفقة
+          # الإعدادات الخاصة بالتوكن الثاني
           cat <<EOF > user_data/config.json
           {
-              "max_open_trades": 5,
+              "max_open_trades": 10, # صفقات أكتر لأنها سريعة
               "stake_currency": "USDT",
               "stake_amount": 10,
               "dry_run": true,
               "dry_run_wallet": 1000,
-              "exchange": {
-                  "name": "gateio",
-                  "pair_whitelist": [".*/USDT"]
-              },
-              "pairlists": [
-                  {
-                      "method": "VolumePairList",
-                      "number_assets": 300,
-                      "sort_key": "quoteVolume",
-                      "refresh_period": 1800
-                  }
-              ],
-              "entry_pricing": {"price_side": "same", "use_order_book": true},
-              "exit_pricing": {"price_side": "same", "use_order_book": true},
+              "exchange": {"name": "gateio", "pair_whitelist": [".*/USDT"]},
+              "pairlists": [{"method": "VolumePairList", "number_assets": 300, "sort_key": "quoteVolume"}],
               "telegram": {
                   "enabled": true,
                   "token": "8575558875:AAEK-jcmG5NF1NJGKdq3XHZ4XPcZxjvbtNo",
@@ -77,4 +65,4 @@ jobs:
               }
           }
           EOF
-          freqtrade trade --config user_data/config.json --strategy MacdStrategy --userdir user_data --dry-run
+          freqtrade trade --config user_data/config.json --strategy ScalpingKing --userdir user_data --dry-run
