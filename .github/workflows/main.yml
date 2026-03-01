@@ -1,37 +1,36 @@
-name: 🚀 Hammo-Ultimate-Engine
+name: 🚀 Hammo-Pure-Launcher
 
 on:
-  workflow_dispatch: # تشغيل يدوي بضغطة زر
+  workflow_dispatch: 
   schedule:
-    - cron: '*/5 * * * *' # تشغيل تلقائي كل 5 دقائق
+    - cron: '*/5 * * * *'
 
 jobs:
-  trading_process:
+  launcher:
     runs-on: ubuntu-latest
-    
     steps:
-      # 1. سحب الكود من المستودع
-      - name: 📂 Checkout Repository
+      # 1. فتح الفولدر
+      - name: 📂 Checkout
         uses: actions/checkout@v4
 
-      # 2. تجهيز لغة بايثون
-      - name: 🐍 Setup Python Environment
+      # 2. تجهيز اللغة
+      - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # 3. تثبيت الأدوات اللازمة (المكتبات)
-      - name: 📦 Install Requirements
-        run: |
-          pip install ccxt python-telegram-bot
+      # 3. تحميل الأدوات (ccxt للتداول و telegram للرسائل)
+      - name: 📦 Install Tools
+        run: pip install ccxt python-telegram-bot
 
-      # 4. تشغيل ملف الاستراتيجية (بدون تليجرام)
-      - name: 📈 Executing Trade Strategy
+      # 4. استدعاء ملف الاستراتيجية اللي بره (trade_logic.py)
+      - name: 📈 Run Strategy File
         run: python trade_logic.py
 
-      # 5. تشغيل ملف التليجرام (منفصل تماماً)
-      - name: 📱 Sending Telegram Notification
+      # 5. استدعاء ملف التليجرام اللي بره (telegram_bot.py)
+      - name: 📱 Run Telegram File
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python telegram_bot.py
+
