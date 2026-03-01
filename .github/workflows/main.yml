@@ -1,4 +1,4 @@
-name: Freqtrade-Final-Power-Fix
+name: Freqtrade-Final-Fix-2026
 on:
   workflow_dispatch:
 jobs:
@@ -10,7 +10,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install Dependencies
+      - name: Install All Dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y build-essential wget
           wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
@@ -18,7 +18,7 @@ jobs:
           cd ta-lib/ && ./configure --prefix=/usr && make && sudo make install
           cd ..
           pip install TA-Lib freqtrade
-      - name: Launch With Everything Enabled
+      - name: Create Config and Launch
         run: |
           freqtrade create-userdir --userdir user_data
           cat <<EOF > user_data/config.json
@@ -47,9 +47,9 @@ jobs:
                   "enabled": true,
                   "token": "8575558875:AAEK-jcmG5NF1NJGKdq3XHZ4XPcZxjvbtNo",
                   "chat_id": "978554149",
-                  "force_entry_enable": true
+                  "force_entry_enable": true,
+                  "force_exit_enable": true
               }
           }
           EOF
-          # تشغيل البوت مباشرة
           freqtrade trade --config user_data/config.json --strategy SampleStrategy --userdir user_data --dry-run
