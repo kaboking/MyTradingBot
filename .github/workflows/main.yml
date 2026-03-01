@@ -23,7 +23,7 @@ jobs:
         run: |
           mkdir -p user_data/strategies
 
-          # config.json (بدون entry/exit_pricing عشان نعدي الخطأ)
+          # config.json المصحح (مع قسم exit_pricing فاضي عشان يعدي الخطأ)
           cat > user_data/config.json << 'EOF'
           {
               "max_open_trades": 3,
@@ -38,6 +38,12 @@ jobs:
                   "pair_whitelist": ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
               },
               "pairlists": [{"method": "StaticPairList"}],
+              "entry_pricing": {
+                  "price_side": "same"
+              },
+              "exit_pricing": {
+                  "price_side": "same"
+              },
               "telegram": {
                   "enabled": true,
                   "token": "8575558875:AAEK-jcmG5NF1NJGKdq3XHZ4XPcZxjvbtNo",
