@@ -43,7 +43,12 @@ jobs:
               "stake_currency": "USDT",
               "stake_amount": 10,
               "dry_run": true,
-              "exchange": {"name": "gateio", "pair_whitelist": [".*/USDT"]},
+              "exchange": {
+                  "name": "gateio",
+                  "pair_whitelist": [".*/USDT"]
+              },
+              "entry_pricing": {"price_side": "same"},
+              "exit_pricing": {"price_side": "same"},
               "telegram": {
                   "enabled": true,
                   "token": "8678435064:AAGLXfPRTuk64LPzSBWFMBDXBnuNyDi-_gQ",
