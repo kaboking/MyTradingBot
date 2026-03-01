@@ -1,0 +1,19 @@
+name: 🚀 Hammo-Starter-Engine
+
+on:
+  workflow_dispatch: # تشغيل يدوي عشان نجرب
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📂 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🐍 Check Python
+        run: python --version
+
+      - name: 📢 Simple Message
+        run: |
+          echo "🎯 حمو بيقولك: الموتور اشتغل كدة تمام!"
+          echo "✅ مفيش ملفات ناقصة دلوقتى عشان كدة مفيش أخطاء."
