@@ -1,36 +1,37 @@
-name: 🚀 Hammo-Pure-Launcher
+name: 🚀 Hammo-Ultimate-Engine
 
 on:
   workflow_dispatch: 
-  schedule:
-    - cron: '*/5 * * * *'
 
 jobs:
-  launcher:
+  trading_process:
     runs-on: ubuntu-latest
     steps:
-      # 1. فتح الفولدر
-      - name: 📂 Checkout
+      - name: 📂 Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. تجهيز اللغة
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      # 3. تحميل الأدوات (ccxt للتداول و telegram للرسائل)
-      - name: 📦 Install Tools
+      - name: 📦 Install Requirements
         run: pip install ccxt python-telegram-bot
 
-      # 4. استدعاء ملف الاستراتيجية اللي بره (trade_logic.py)
-      - name: 📈 Run Strategy File
-        run: python trade_logic.py
+      # السطر ده وظيفته يخلي الموتور يدور على الملف في الفولدر الرئيسي
+      - name: 📈 Executing Trade Strategy
+        run: |
+          if [ -f "trade_logic.py" ]; then
+            python trade_logic.py
+          else
+            echo "❌ يا محمد ملف trade_logic.py مش موجود بره الفولدر!"
+            exit 1
+          fi
 
-      # 5. استدعاء ملف التليجرام اللي بره (telegram_bot.py)
-      - name: 📱 Run Telegram File
+      - name: 📱 Sending Telegram Notification
         env:
           TG_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python telegram_bot.py
+
 
